@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SuperSplat Viewer</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <base href="" />
+    <link rel="stylesheet" href="./index.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/build/playcanvas.mjs",
+          "spline": "./spline.js"
+        }
+      }
+    </script>
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@playcanvas/web-components@0.1.13/dist/pwc.mjs"
+    ></script>
+    <script type="module">
+      window.settings = fetch("./settings.json").then((response) =>
+        response.json()
+      );
+    </script>
+  </head>
+  <body>
+    <pc-app
+      antialias="false"
+      depth="false"
+      high-resolution="true"
+      stencil="false"
+    >
+      <pc-asset
+        src="https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/scripts/esm/camera-controls.mjs"
+      ></pc-asset>
+      <pc-asset
+        src="https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/scripts/esm/xr-controllers.mjs"
+      ></pc-asset>
+      <pc-asset
+        src="https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/scripts/esm/xr-navigation.mjs"
+      ></pc-asset>
+      <pc-asset
+        id="ply"
+        type="gsplat"
+        lazy
+        src="./scene.compressed.ply"
+      ></pc-asset>
+      <pc-scene>
+        <!-- Camera (with XR support) -->
+        <pc-entity name="camera root">
+          <pc-entity name="camera">
+            <pc-camera
+              near-clip="0.01"
+              far-clip="1000"
+              horizontal-fov="true"
+              tonemap="none"
+            ></pc-camera>
+            <pc-scripts>
+              <pc-script name="cameraControls"></pc-script>
+            </pc-scripts>
+          </pc-entity>
+        </pc-entity>
+        <!-- Light (for XR controllers) -->
+        <pc-entity name="light" rotation="35 45 0">
+          <pc-light color="white" intensity="1.5"></pc-light>
+        </pc-entity>
+        <!-- Splat -->
+        <pc-entity name="splat" rotation="0 0 180">
+          <pc-splat asset="ply"></pc-splat>
+        </pc-entity>
+      </pc-scene>
+    </pc-app>
+
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
