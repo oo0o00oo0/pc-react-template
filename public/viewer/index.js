@@ -1,4 +1,11 @@
-import { BoundingBox, Color, Mat4, Script, Vec3 } from "playcanvas";
+import {
+  BoundingBox,
+  Color,
+  Mat4,
+  Script,
+  Vec3,
+  BLEND_SCREEN,
+} from "playcanvas";
 
 import { CubicSpline } from "spline";
 
@@ -299,6 +306,38 @@ class ViewerApp {
       console.warn("No developments data found");
       return;
     }
+
+    const mapModels = await Promise.all(
+      [...document.querySelectorAll("[map-connections-label]")].map((el) =>
+        el.ready()
+      )
+    );
+
+    mapModels.forEach((modelElement) => {
+      const entity = modelElement.entity;
+
+      //   const immediateLayer = app.scene.layers.getLayerByName("Immediate");
+
+      const renderComponents = entity.findComponents("render");
+
+      renderComponents.forEach((renderComp) => {
+        // renderComp.layers = [immediateLayer.id];
+
+        const color = new Color(0.91, 0.33, 0.09);
+
+        renderComp.meshInstances.forEach((meshInstance) => {
+          const material = meshInstance.material;
+          material.emissive = color;
+          material.opacity = 0.5;
+          material.depthWrite = true;
+          material.depthTest = true;
+          //   material.blendType = BLEND_SCREEN;
+          material.update();
+        });
+      });
+    });
+
+    console.log("mapModels", mapModels);
 
     window.parent.postMessage({ type: "scene-ready" }, "*");
   }

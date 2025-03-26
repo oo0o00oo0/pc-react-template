@@ -27,10 +27,11 @@
       );
     </script>
   </head>
+
   <body>
     <pc-app
+      depth="true"
       antialias="false"
-      depth="false"
       high-resolution="true"
       stencil="false"
     >
@@ -63,9 +64,15 @@
           </pc-entity>
         </pc-entity>
         <!-- Light (for XR controllers) -->
-        <pc-entity name="light" rotation="35 45 0">
-          <pc-light color="white" intensity="1.5"></pc-light>
+        <pc-entity
+          name="barbican"
+          position="3.248731 5 12.948155"
+          scale="5 5 5"
+          map-connections-label
+        >
+          <pc-render type="sphere"></pc-render>
         </pc-entity>
+
         <!-- Splat -->
         <pc-entity name="splat" rotation="0 0 180">
           <pc-splat asset="ply"></pc-splat>
