@@ -74,6 +74,8 @@ class ViewerApp {
     if (!splatAssets.length) return;
 
     const splatAsset = splatAssets[0];
+
+    console.log(splatAsset.entity);
     splatAsset.on("progress", (received, length) => {
       const percent = (Math.min(1, received / length) * 100).toFixed(0);
       window.parent.postMessage({ type: "loading", received, v: percent }, "*");

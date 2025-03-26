@@ -65,6 +65,8 @@ class FrameScene extends Script {
     // get the gsplat component
     const gsplatComponent = app.root.findComponent("gsplat");
 
+    console.log(gsplatComponent.entity.gsplat.resource);
+
     const events = ["wheel", "pointerdown", "contextmenu"];
     const handler = (e) => {
       events.forEach((event) =>
