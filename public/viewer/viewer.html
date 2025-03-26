@@ -64,13 +64,21 @@
           </pc-entity>
         </pc-entity>
         <!-- Light (for XR controllers) -->
+        <pc-entity name="barbican" position="-7 1 2" scale="2 2 2" solid>
+          <pc-render type="box"></pc-render>
+        </pc-entity>
+
+        <pc-entity name="barbican" position="0 1 2" scale="2 2 2" blend>
+          <pc-render type="box"></pc-render>
+        </pc-entity>
+
         <pc-entity
-          name="barbican"
-          position="3.248731 5 12.948155"
-          scale="5 5 5"
-          map-connections-label
+          position="5 0 0"
+          rotation="30 0 0"
+          scale="1 1 1"
+          name="light"
         >
-          <pc-render type="sphere"></pc-render>
+          <pc-light type="directional" color="white" intensity="1"></pc-light>
         </pc-entity>
 
         <!-- Splat -->

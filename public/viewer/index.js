@@ -4,234 +4,16 @@ import {
   Mat4,
   Script,
   Vec3,
+  ShaderMaterial,
   BLEND_SCREEN,
+  SEMANTIC_POSITION,
+  SEMANTIC_TEXCOORD0,
+  BLEND_NORMAL,
 } from "playcanvas";
-
-import { CubicSpline } from "spline";
 
 import { viewerSettings } from "./config/settings.js";
 
 import FrameScene from "./camera/frame-scene.mjs";
-
-const url = new URL(location.href);
-
-// class FrameScene extends Script {
-//   initialize() {
-//     const { settings } = this;
-//     const { camera, animTracks } = settings;
-//     const { position, target } = camera;
-
-//     this.position = position && new Vec3(position);
-//     this.target = target && new Vec3(target);
-
-//     // construct camera animation track
-//     if (animTracks?.length > 0 && settings.camera.startAnim === "animTrack") {
-//       const track = animTracks.find((track) => track.name === camera.animTrack);
-//       if (track) {
-//         const { keyframes, duration } = track;
-//         const { times, values } = keyframes;
-//         const { position, target } = values;
-
-//         // construct the points array containing position and target
-//         const points = [];
-//         for (let i = 0; i < times.length; i++) {
-//           points.push(
-//             position[i * 3],
-//             position[i * 3 + 1],
-//             position[i * 3 + 2]
-//           );
-//           points.push(target[i * 3], target[i * 3 + 1], target[i * 3 + 2]);
-//         }
-
-//         this.cameraAnim = {
-//           time: 0,
-//           spline: CubicSpline.fromPointsLooping(duration, times, points),
-//           track,
-//           result: [],
-//         };
-//       }
-//     }
-//   }
-
-//   initCamera() {
-//     const { app } = this;
-//     const { graphicsDevice } = app;
-//     let animating = false;
-//     let animationTimer = 0;
-
-//     // get the gsplat component
-//     const gsplatComponent = app.root.findComponent("gsplat");
-
-//     // calculate the bounding box
-//     const bbox =
-//       gsplatComponent?.instance?.meshInstance?.aabb ?? new BoundingBox();
-
-//     this.frameScene(bbox, false);
-
-//     const cancelAnimation = () => {
-//       if (animating) {
-//         animating = false;
-
-//         // copy current camera position and target
-//         const r = this.cameraAnim.result;
-//         this.entity.script.cameraControls.focus(
-//           new Vec3(r[3], r[4], r[5]),
-//           new Vec3(r[0], r[1], r[2]),
-//           false
-//         );
-//       }
-//     };
-
-//     // listen for interaction events
-//     const events = ["wheel", "pointerdown", "contextmenu"];
-//     const handler = (e) => {
-//       cancelAnimation();
-//       events.forEach((event) =>
-//         app.graphicsDevice.canvas.removeEventListener(event, handler)
-//       );
-//     };
-//     events.forEach((event) =>
-//       app.graphicsDevice.canvas.addEventListener(event, handler)
-//     );
-
-//     app.on("update", (deltaTime) => {
-//       // handle camera animation
-//       if (this.cameraAnim && animating && !params.noanim) {
-//         const { cameraAnim } = this;
-//         const { spline, track, result } = cameraAnim;
-
-//         // update animation timer
-//         animationTimer += deltaTime;
-
-//         // update the track cursor
-//         if (animationTimer < 5) {
-//           // ease in
-//           cameraAnim.time += deltaTime * Math.pow(animationTimer / 5, 0.5);
-//         } else {
-//           cameraAnim.time += deltaTime;
-//         }
-
-//         if (cameraAnim.time >= track.duration) {
-//           switch (track.loopMode) {
-//             case "none":
-//               cameraAnim.time = track.duration;
-//               break;
-//             case "repeat":
-//               cameraAnim.time = cameraAnim.time % track.duration;
-//               break;
-//             case "pingpong":
-//               cameraAnim.time = cameraAnim.time % (track.duration * 2);
-//               break;
-//           }
-//         }
-
-//         // evaluate the spline
-//         spline.evaluate(
-//           cameraAnim.time > track.duration
-//             ? track.duration - cameraAnim.time
-//             : cameraAnim.time,
-//           result
-//         );
-
-//         // set camera
-//         this.entity.setPosition(result[0], result[1], result[2]);
-//         this.entity.lookAt(result[3], result[4], result[5]);
-//       }
-//     });
-
-//     const prevProj = new Mat4();
-//     const prevWorld = new Mat4();
-
-//     app.on("framerender", () => {
-//       if (!app.autoRender && !app.renderNextFrame) {
-//         const world = this.entity.getWorldTransform();
-//         if (!nearlyEquals(world.data, prevWorld.data)) {
-//           app.renderNextFrame = true;
-//         }
-
-//         const proj = this.entity.camera.projectionMatrix;
-//         if (!nearlyEquals(proj.data, prevProj.data)) {
-//           app.renderNextFrame = true;
-//         }
-
-//         if (app.renderNextFrame) {
-//           prevWorld.copy(world);
-//           prevProj.copy(proj);
-//         }
-//       }
-//     });
-
-//     // wait for first gsplat sort
-//     const handle = gsplatComponent?.instance?.sorter?.on("updated", () => {
-//       handle.off();
-
-//       // request frame render
-//       app.renderNextFrame = true;
-
-//       // wait for first render to complete
-//       const frameHandle = app.on("frameend", () => {
-//         console.log("frameend");
-//         frameHandle.off();
-
-//         // start animating once the first frame is rendered
-//         if (this.cameraAnim) {
-//           animating = true;
-//         }
-
-//         // emit first frame event on window
-//         window.firstFrame?.();
-//       });
-//     });
-
-//     const updateHorizontalFov = (width, height) => {
-//       this.entity.camera.horizontalFov = width > height;
-//     };
-
-//     // handle fov on canvas resize
-//     graphicsDevice.on("resizecanvas", (width, height) => {
-//       updateHorizontalFov(width, height);
-//       app.renderNextFrame = true;
-//     });
-
-//     // configure on-demand rendering
-//     app.autoRender = false;
-//     updateHorizontalFov(graphicsDevice.width, graphicsDevice.height);
-//   }
-
-//   postInitialize() {
-//     const assets = this.app.assets.filter((asset) => asset.type === "gsplat");
-//     if (assets.length > 0) {
-//       const asset = assets[0];
-//       if (asset.loaded) {
-//         this.initCamera();
-//       } else {
-//         asset.on("load", () => {
-//           this.initCamera();
-//         });
-//       }
-//     }
-//   }
-// }
-
-// document.addEventListener("DOMContentLoaded", async () => {
-//   const appElement = await document.querySelector("pc-app").ready();
-//   const cameraElement = await document
-//     .querySelector('pc-entity[name="camera"]')
-//     .ready();
-
-//   const app = await appElement.app;
-//   const camera = cameraElement.entity;
-//   const settings = await window.settings;
-
-//   camera.camera.clearColor = new Color(settings.background.color);
-//   camera.camera.fov = settings.camera.fov;
-//   camera.script.create(FrameScene, {
-//     properties: { settings },
-//   });
-
-//   // Update loading indicator
-//   this.monitorSplatAssetLoading();
-// });
 
 class ViewerApp {
   constructor() {
@@ -307,37 +89,94 @@ class ViewerApp {
       return;
     }
 
-    const mapModels = await Promise.all(
-      [...document.querySelectorAll("[map-connections-label]")].map((el) =>
-        el.ready()
-      )
+    const blendModels = await Promise.all(
+      [...document.querySelectorAll("[blend]")].map((el) => el.ready())
     );
 
-    mapModels.forEach((modelElement) => {
+    const solidModels = await Promise.all(
+      [...document.querySelectorAll("[solid]")].map((el) => el.ready())
+    );
+
+    const custom_material = new ShaderMaterial({
+      uniqueName: "GreenMaterial",
+      vertexCode: /* glsl */ `
+          attribute vec3 vertex_position;
+          uniform mat4 matrix_model;
+          uniform mat4 matrix_viewProjection;
+          attribute vec2 aUv0;
+          varying vec2 vUv0;
+          varying vec3 vPosition;
+          
+          void main() {
+              vUv0 = aUv0;
+              vPosition = vertex_position;
+              gl_Position = matrix_viewProjection * matrix_model * vec4(vertex_position, 1.0);
+          }
+        `,
+      fragmentCode: /* glsl */ `
+          precision mediump float;
+          varying vec2 vUv0;
+          varying vec3 vPosition;
+          void main() {
+              gl_FragColor = vec4(vPosition.x, 0.3, 0.0, 0.3); // Alpha is set to 0.3
+          }
+        `,
+      attributes: {
+        vertex_position: SEMANTIC_POSITION,
+        aUv0: SEMANTIC_TEXCOORD0,
+      },
+      blendState: {
+        blend: true,
+        blendSrc: "SRC_ALPHA",
+        blendDst: "ONE_MINUS_SRC_ALPHA",
+      },
+      depthState: {
+        write: true, // Disable depth writing for transparent objects
+      },
+    });
+
+    blendModels.forEach((modelElement) => {
       const entity = modelElement.entity;
 
-      //   const immediateLayer = app.scene.layers.getLayerByName("Immediate");
+      const immediateLayer = app.scene.layers.getLayerByName("Immediate");
 
       const renderComponents = entity.findComponents("render");
 
       renderComponents.forEach((renderComp) => {
-        // renderComp.layers = [immediateLayer.id];
-
-        const color = new Color(0.91, 0.33, 0.09);
+        renderComp.layers = [immediateLayer.id];
 
         renderComp.meshInstances.forEach((meshInstance) => {
+          meshInstance.material = custom_material;
           const material = meshInstance.material;
-          material.emissive = color;
-          material.opacity = 0.5;
-          material.depthWrite = true;
-          material.depthTest = true;
-          //   material.blendType = BLEND_SCREEN;
+          material.blendType = 7;
+          material.depthWrite = false;
+          material.depthTest = false;
           material.update();
         });
       });
     });
 
-    console.log("mapModels", mapModels);
+    solidModels.forEach((modelElement) => {
+      const entity = modelElement.entity;
+
+      const renderComponents = entity.findComponents("render");
+
+      renderComponents.forEach((renderComp) => {
+        renderComp.meshInstances.forEach((meshInstance) => {
+          const material = meshInstance.material;
+          material.diffuse = new Color(0.91, 0.33, 0.09);
+          material.specular = new Color(0.91, 0.33, 0.09);
+          material.shininess = 100;
+
+          material.opacity = 0.3;
+
+          material.blendType = BLEND_NORMAL;
+          material.update();
+        });
+      });
+    });
+
+    console.log("solidModels", solidModels);
 
     window.parent.postMessage({ type: "scene-ready" }, "*");
   }
