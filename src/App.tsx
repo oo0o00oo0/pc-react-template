@@ -1,13 +1,10 @@
 import "./App.css";
-
+import Viewer from "./components/Viewer";
 function App() {
   return (
-    <>
-      <iframe
-        style={{ width: "100%", height: "100%" }}
-        src="/viewer/viewer.html"
-      />
-    </>
+    <div className="App">
+      <Viewer />
+    </div>
   );
 }
 
