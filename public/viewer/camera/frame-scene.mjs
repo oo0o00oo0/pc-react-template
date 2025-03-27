@@ -1,6 +1,8 @@
 import { Mat4, Script, Vec3 } from "playcanvas";
 import { nearlyEquals, viewerSettings } from "../config/settings.js";
 
+//https://stackblitz.com/edit/pc-react-gaussian-splats-hpsx2yzo?file=src%2FApp.tsx,src%2Fcomponents%2FSplatViewer.tsx,src%2Fcomponents%2FCustomGSplat.tsx
+
 class FrameScene extends Script {
   constructor(args) {
     super(args);
@@ -68,11 +70,13 @@ class FrameScene extends Script {
     console.log(gsplatComponent.entity.gsplat.resource);
 
     const events = ["wheel", "pointerdown", "contextmenu"];
+
     const handler = (e) => {
       events.forEach((event) =>
         app.graphicsDevice.canvas.removeEventListener(event, handler)
       );
     };
+
     events.forEach((event) =>
       app.graphicsDevice.canvas.addEventListener(event, handler)
     );
@@ -86,6 +90,7 @@ class FrameScene extends Script {
     const prevWorld = new Mat4();
 
     app.on("framerender", () => {
+      console.log("FRAME RENDER");
       if (!app.autoRender && !app.renderNextFrame) {
         const world = this.entity.getWorldTransform();
         const target = new Vec3();
@@ -144,14 +149,31 @@ class FrameScene extends Script {
     const assets = this.app.assets.filter((asset) => asset.type === "gsplat");
     if (assets.length > 0) {
       const asset = assets[0];
+
       if (asset.loaded) {
         this.initCamera();
       } else {
         asset.on("load", () => {
+          this.setupCustomShader(asset);
           this.initCamera();
         });
       }
     }
+  }
+
+  setupCustomShader(gsplatAsset) {
+    // Access the original material
+    const material = gsplatAsset.resource.splat;
+
+    console.log(material);
+    // Create a new shader using your custom fragment shader and the original vertex shader
+    // const customShader = this.app.graphicsDevice.createShader({
+    //   vshader: material.shader.vshader, // use the existing vertex shader
+    //   fshader: customFragmentShader, // override fragment shader
+    // });
+
+    // // Replace the material's shader
+    // material.shader = customShader;
   }
 }
 

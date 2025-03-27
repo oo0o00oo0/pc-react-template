@@ -2,8 +2,6 @@ class ViewerReconciler {
   constructor() {
     this.state = {
       visibleModels: new Map(), // Track models and their states
-      cameraPosition: [2, 1, 2],
-      cameraTarget: [0, 0, 0],
     };
   }
 
@@ -43,30 +41,8 @@ class ViewerReconciler {
       this.state.visibleModels = newModels;
     }
 
-    // Handle camera position changes
-    if (
-      newState.cameraPosition &&
-      !arraysEqual(this.state.cameraPosition, newState.cameraPosition)
-    ) {
-      changes.push({
-        type: "camera",
-        position: newState.cameraPosition,
-        target: newState.cameraTarget || this.state.cameraTarget,
-      });
-
-      this.state.cameraPosition = newState.cameraPosition;
-      this.state.cameraTarget =
-        newState.cameraTarget || this.state.cameraTarget;
-    }
-
     return changes;
   }
-}
-
-// Helper function to compare arrays
-function arraysEqual(a, b) {
-  if (a.length !== b.length) return false;
-  return a.every((val, index) => val === b[index]);
 }
 
 export default ViewerReconciler;

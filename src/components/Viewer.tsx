@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const Viewer = () => {
   const iframe = useRef<HTMLIFrameElement>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [developmentsData, setDevelopmentData] = useState<any>({
@@ -12,6 +13,9 @@ const Viewer = () => {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "loading") {
+        if (loadingRef.current) {
+          loadingRef.current.textContent = event.data.v;
+        }
         // console.log("loading", event.data.v);
         // handleLoading(event.data, loadingRef);
         if (event.data.v === "100") {
@@ -51,16 +55,47 @@ const Viewer = () => {
     }
   }, [isLoadingComplete, developmentsData, iframe]);
   return (
-    <iframe
-      ref={iframe}
-      style={{
-        width: "100%",
-        height: "100%",
-        opacity: isSceneReady ? 1 : 0,
-        transition: "opacity 0.2s ease-in-out",
-      }}
-      src="/viewer/viewer.html"
-    />
+    <>
+      <button
+        onClick={() => {
+          iframe.current?.contentWindow?.postMessage(
+            {
+              type: "set0",
+              activeObjects: [
+                {
+                  id: Math.random(),
+                  state: "on",
+                },
+              ],
+            },
+            "*"
+          );
+        }}
+      >
+        event
+      </button>
+      <h1
+        style={{
+          position: "absolute",
+          top: 0,
+          pointerEvents: "none",
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
+        ref={loadingRef}
+      ></h1>
+      <iframe
+        ref={iframe}
+        style={{
+          width: "100%",
+          height: "100%",
+          opacity: isSceneReady ? 1 : 0,
+          transition: "opacity 0.2s ease-in-out",
+        }}
+        src="/viewer/viewer.html"
+      />
+    </>
   );
 };
 

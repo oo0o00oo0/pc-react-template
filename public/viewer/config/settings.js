@@ -1,7 +1,8 @@
 const viewerSettings = {
   camera: {
+    // position: [50.5, 50.5, 50.5],
+    position: [1, 0, 0],
     fov: 65,
-    position: [50.5, 50.5, 50.5],
     target: [0, 0, 0],
     startAnim: "none",
     animTrack: null,

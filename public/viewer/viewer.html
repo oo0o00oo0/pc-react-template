@@ -36,12 +36,7 @@
       stencil="false"
     >
       <pc-asset src="./camera/camera-controls.mjs"></pc-asset>
-      <pc-asset
-        src="https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/scripts/esm/xr-controllers.mjs"
-      ></pc-asset>
-      <pc-asset
-        src="https://cdn.jsdelivr.net/npm/playcanvas@2.4.2/scripts/esm/xr-navigation.mjs"
-      ></pc-asset>
+
       <pc-asset
         id="ply"
         type="gsplat"
@@ -49,7 +44,6 @@
         src="./trained-1.5k-23s-1sh.compressed.ply"
       ></pc-asset>
       <pc-scene>
-        <!-- Camera (with XR support) -->
         <pc-entity name="camera root">
           <pc-entity name="camera">
             <pc-camera

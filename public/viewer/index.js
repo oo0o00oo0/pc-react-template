@@ -1,17 +1,14 @@
 import {
-  BoundingBox,
   Color,
-  Mat4,
-  Script,
   Vec3,
   ShaderMaterial,
-  BLEND_SCREEN,
   SEMANTIC_POSITION,
   SEMANTIC_TEXCOORD0,
-  BLEND_NORMAL,
 } from "playcanvas";
 
 import { viewerSettings } from "./config/settings.js";
+
+import * as handlers from "./state/messageHandlers.js";
 
 import FrameScene from "./camera/frame-scene.mjs";
 
@@ -59,7 +56,9 @@ class ViewerApp {
     // });
     // camera.script.cameraControls.zoomMin = 1;
     // camera.script.cameraControls.zoomMax = 10;
+
     camera.camera.frustumCulling = false;
+
     // const outliner = new Outliner(this.app, camera);
 
     this.pendingInitialization = { camera };
@@ -120,20 +119,12 @@ class ViewerApp {
           varying vec2 vUv0;
           varying vec3 vPosition;
           void main() {
-              gl_FragColor = vec4(vPosition.x, 0.3, 0.0, 0.3); // Alpha is set to 0.3
+              gl_FragColor = vec4(vPosition.x, 0.3, 0.0, 1.0); // Alpha is set to 0.3
           }
         `,
       attributes: {
         vertex_position: SEMANTIC_POSITION,
         aUv0: SEMANTIC_TEXCOORD0,
-      },
-      blendState: {
-        blend: true,
-        blendSrc: "SRC_ALPHA",
-        blendDst: "ONE_MINUS_SRC_ALPHA",
-      },
-      depthState: {
-        write: true, // Disable depth writing for transparent objects
       },
     });
 
@@ -169,16 +160,12 @@ class ViewerApp {
           material.diffuse = new Color(0.91, 0.33, 0.09);
           material.specular = new Color(0.91, 0.33, 0.09);
           material.shininess = 100;
-
-          material.opacity = 0.3;
-
-          material.blendType = BLEND_NORMAL;
+          // material.opacity = 0.3;
+          // material.blendType = BLEND_NORMAL;
           material.update();
         });
       });
     });
-
-    console.log("solidModels", solidModels);
 
     window.parent.postMessage({ type: "scene-ready" }, "*");
   }

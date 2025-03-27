@@ -5,12 +5,16 @@ import { Vec3 } from "playcanvas";
 const reconciler = new ViewerReconciler();
 
 export const set0 = async (viewerApp, event) => {
+  console.log("set0", event);
+
   const app = viewerApp.app;
   const { activeObjects, camPositionEXLP, camTargetEXLP } = event.data;
 
   const changes = reconciler.reconcile({
     visibleModels: activeObjects,
   });
+
+  console.log("changes", changes);
 
   changes.forEach((change) => {
     const model = viewerApp.models.get(change.model);
