@@ -11,7 +11,7 @@ import { viewerSettings } from "./config/settings.js";
 import * as handlers from "./state/messageHandlers.js";
 
 import FrameScene from "./camera/frame-scene.mjs";
-
+//https://playcanvas.vercel.app/#/graphics/shader-burn
 class ViewerApp {
   constructor() {
     this.app = null;
