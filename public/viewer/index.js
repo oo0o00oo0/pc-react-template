@@ -1,5 +1,7 @@
 import {
+  BLEND_NORMAL,
   Color,
+  Material,
   SEMANTIC_POSITION,
   SEMANTIC_TEXCOORD0,
   ShaderMaterial,
@@ -119,7 +121,8 @@ class ViewerApp {
           varying vec2 vUv0;
           varying vec3 vPosition;
           void main() {
-              gl_FragColor = vec4(vPosition.x, 0.3, 0.0, 1.0); // Alpha is set to 0.3
+            vec3 color = vec3(0.91, 0.33, 0.09);
+              gl_FragColor = vec4(color, 1.0); // Alpha is set to 0.3
           }
         `,
       attributes: {
@@ -128,41 +131,89 @@ class ViewerApp {
       },
     });
 
-    blendModels.forEach((modelElement) => {
+    // blendModels.forEach((modelElement) => {
+    //   const entity = modelElement.entity;
+
+    //   const immediateLayer = app.scene.layers.getLayerByName("Immediate");
+
+    //   const renderComponents = entity.findComponents("render");
+
+    //   renderComponents.forEach((renderComp) => {
+    //     renderComp.layers = [3];
+
+    //     renderComp.meshInstances.forEach((meshInstance) => {
+    //       meshInstance.material = custom_material;
+    //       const material = meshInstance.material;
+    //       material.blendType = 7;
+    //       material.depthWrite = true;
+    //       material.depthTest = true;
+    //       material.emissive = new Color(0.91, 0.33, 0.09);
+    //       material.update();
+    //     });
+    //   });
+    // });
+
+    const occlusionModels = await Promise.all(
+      [...document.querySelectorAll("[occlusion]")].map((el) => el.ready()),
+    );
+
+    const lights = await Promise.all(
+      [...document.querySelectorAll("[light]")].map((el) => el.ready()),
+    );
+
+    lights.forEach((lightElement) => {
+      const immediateLayer = app.scene.layers.getLayerByName("Immediate");
+      const entity = lightElement.entity;
+      console.log("light", entity);
+      entity.layers = [immediateLayer.id];
+    });
+
+    solidModels.forEach((modelElement) => {
       const entity = modelElement.entity;
 
       const immediateLayer = app.scene.layers.getLayerByName("Immediate");
 
       const renderComponents = entity.findComponents("render");
 
+      const col1 = new Color(0.24, 0.84, 0.90);
+      const col2 = new Color(0.37, 0.71, 0.77);
+
       renderComponents.forEach((renderComp) => {
         renderComp.layers = [immediateLayer.id];
 
+        const name = renderComp.entity.name;
+        console.log(name);
+
         renderComp.meshInstances.forEach((meshInstance) => {
-          meshInstance.material = custom_material;
           const material = meshInstance.material;
-          material.blendType = 7;
-          material.depthWrite = false;
-          material.depthTest = false;
+          // material.emissive = name === "03F" ? col1 : col2;
+          material.diffuse = name === "03F" ? col1 : col2;
+          material.specular = new Color(0.91, 0.33, 0.09);
+          material.shininess = 100;
+          material.opacity = 1;
+          // material.opacity = Math.random() > 0.5
+          //   ? name === "03F" ? 0.9 : 0.4
+          //   : 0.0;
+          material.blendType = BLEND_NORMAL;
           material.update();
         });
       });
     });
 
-    solidModels.forEach((modelElement) => {
+    occlusionModels.forEach((modelElement) => {
+      const immediateLayer = app.scene.layers.getLayerByName("Immediate");
       const entity = modelElement.entity;
-
       const renderComponents = entity.findComponents("render");
-
       renderComponents.forEach((renderComp) => {
+        renderComp.layers = [immediateLayer.id];
         renderComp.meshInstances.forEach((meshInstance) => {
           const material = meshInstance.material;
-          material.diffuse = new Color(0.91, 0.33, 0.09);
-          material.specular = new Color(0.91, 0.33, 0.09);
-          material.shininess = 100;
-          // material.opacity = 0.3;
-          // material.blendType = BLEND_NORMAL;
-          material.update();
+
+          material.redWrite = false;
+          material.greenWrite = false;
+          material.blueWrite = false;
+
+          meshInstance.material = material;
         });
       });
     });
@@ -190,7 +241,7 @@ class ViewerApp {
           new Vec3(0, 0, 0),
           20,
           0,
-          [-13, 10, -13],
+          [-183, 160, -183],
           [0, 2, 5],
         );
       }

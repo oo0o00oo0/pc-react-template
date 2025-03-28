@@ -12,7 +12,7 @@
     <script type="importmap">
       {
         "imports": {
-          "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.5.2/build/playcanvas.mjs",
+          "playcanvas": "./playcanvas.mjs",
           "spline": "./spline.js"
         }
       }
@@ -43,6 +43,9 @@
         lazy
         src="./trained-1.5k-23s-1sh.compressed.ply"
       ></pc-asset>
+
+      <pc-asset src="./models/test-0.glb" id="overlays"></pc-asset>
+
       <pc-scene>
         <pc-entity name="camera root">
           <pc-entity name="camera">
@@ -58,12 +61,27 @@
           </pc-entity>
         </pc-entity>
         <!-- Light (for XR controllers) -->
-        <pc-entity name="barbican" position="-7 1 2" scale="2 2 2" solid>
+        <pc-entity
+          rotation="0 2.5 0"
+          position="-60 25 -5"
+          scale="70 60 20"
+          occlusion
+        >
           <pc-render type="box"></pc-render>
         </pc-entity>
 
-        <pc-entity name="barbican" position="0 1 2" scale="2 2 2" blend>
-          <pc-render type="box"></pc-render>
+        <pc-entity position="0 2 2" scale="9 9 9" blend>
+          <pc-render type="plane"></pc-render>
+        </pc-entity>
+
+        <pc-entity
+          scale="1.2 1.2 1.2"
+          position="-8 -0.339 -9"
+          rotation="0 182.5 0"
+          name="overlays"
+          solid
+        >
+          <pc-model asset="overlays"> </pc-model>
         </pc-entity>
 
         <pc-entity
@@ -71,8 +89,12 @@
           rotation="30 0 0"
           scale="1 1 1"
           name="light"
+          light
         >
           <pc-light type="directional" color="white" intensity="1"></pc-light>
+        </pc-entity>
+        <pc-entity light>
+          <pc-light type="omni" color="white" intensity="1"></pc-light>
         </pc-entity>
 
         <!-- Splat -->

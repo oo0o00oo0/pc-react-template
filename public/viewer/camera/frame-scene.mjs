@@ -23,6 +23,14 @@ class FrameScene extends Script {
 
   frameScene(centerPoint, groupSize, zFactor, camPositionEXLP, camTargetEXLP) {
     let target;
+    console.log(
+      "frameScene",
+      centerPoint,
+      groupSize,
+      zFactor,
+      camPositionEXLP,
+      camTargetEXLP,
+    );
 
     if (camTargetEXLP) {
       target = new Vec3(camTargetEXLP);
@@ -156,7 +164,7 @@ class FrameScene extends Script {
         this.initCamera();
       } else {
         asset.on("load", () => {
-          this.setupCustomShader(asset);
+          // this.setupCustomShader(asset);
           this.initCamera();
         });
       }
