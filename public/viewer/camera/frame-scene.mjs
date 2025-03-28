@@ -1,5 +1,12 @@
 import { Mat4, Script, Vec3 } from "playcanvas";
 import { nearlyEquals, viewerSettings } from "../config/settings.js";
+import * as pc from "playcanvas";
+
+import vert from "../glsl/vertex.mjs";
+import frag from "../glsl/fragment.mjs";
+// console.log(vert);
+
+// console.log(pc.version);
 
 //https://stackblitz.com/edit/pc-react-gaussian-splats-hpsx2yzo?file=src%2FApp.tsx,src%2Fcomponents%2FSplatViewer.tsx,src%2Fcomponents%2FCustomGSplat.tsx
 
@@ -15,14 +22,6 @@ class FrameScene extends Script {
   }
 
   frameScene(centerPoint, groupSize, zFactor, camPositionEXLP, camTargetEXLP) {
-    console.log(
-      "frameScene",
-      centerPoint,
-      groupSize,
-      zFactor,
-      camPositionEXLP,
-      camTargetEXLP
-    );
     let target;
 
     if (camTargetEXLP) {
@@ -47,8 +46,8 @@ class FrameScene extends Script {
           new Vec3(
             distance - 0.5 * Math.random() - 0.5,
             distance + 0.3 + zFactor,
-            distance + 0
-          )
+            distance + 0,
+          ),
         );
     }
 
@@ -90,7 +89,6 @@ class FrameScene extends Script {
     const prevWorld = new Mat4();
 
     app.on("framerender", () => {
-      console.log("FRAME RENDER");
       if (!app.autoRender && !app.renderNextFrame) {
         const world = this.entity.getWorldTransform();
         const target = new Vec3();
@@ -117,6 +115,8 @@ class FrameScene extends Script {
     // wait for first gsplat sort
     const handle = gsplatComponent?.instance?.sorter?.on("updated", () => {
       handle.off();
+
+      console.log(gsplatComponent?.resource);
 
       app.renderNextFrame = true;
 
@@ -147,6 +147,8 @@ class FrameScene extends Script {
 
   postInitialize() {
     const assets = this.app.assets.filter((asset) => asset.type === "gsplat");
+
+    console.log("assets", assets);
     if (assets.length > 0) {
       const asset = assets[0];
 
@@ -162,19 +164,48 @@ class FrameScene extends Script {
   }
 
   setupCustomShader(gsplatAsset) {
-    // Access the original material
-    const material = gsplatAsset.resource.splat;
+    // console.log(gsplatAsset.entity);
 
-    console.log(material);
-    // Create a new shader using your custom fragment shader and the original vertex shader
-    // const customShader = this.app.graphicsDevice.createShader({
-    //   vshader: material.shader.vshader, // use the existing vertex shader
-    //   fshader: customFragmentShader, // override fragment shader
-    // });
+    //  const materialOptions = {
+    //         vertex: vert
+    //     };
+    //     biker1.gsplat.materialOptions = useCustomShader ? materialOptions : null;
+    //     biker2.gsplat.materialOptions = useCustomShader ? materialOptions : null;
 
-    // // Replace the material's shader
-    // material.shader = customShader;
+    //     // biker 2 uses a different shader variant
+    //     biker2.gsplat.material.setDefine('CUTOUT', true);
+    const test_splat = gsplatAsset.resource.instantiate({
+      vertex: vert,
+    });
+
+    test_splat.name = "test_splat";
+    test_splat.setLocalPosition(0, 3.8, 0);
+    test_splat.setLocalScale(1, 1, 1);
+    app.root.addChild(test_splat);
   }
 }
+
+// // helper function to create a splat instance
+// const createSplatInstance = (
+//   name,
+//   asset,
+//   px,
+//   py,
+//   pz,
+//   scale,
+//   vertex,
+//   fragment,
+// ) => {
+//   const entity = new pc.Entity(name);
+//   entity.addComponent("gsplat", {
+//     asset: asset,
+//   });
+//   entity.setLocalPosition(px, py, pz);
+//   entity.setLocalEulerAngles(180, 90, 0);
+//   entity.setLocalScale(scale, scale, scale);
+//   app.root.addChild(entity);
+
+//   return entity;
+// };
 
 export default FrameScene;

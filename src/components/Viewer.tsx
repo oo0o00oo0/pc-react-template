@@ -50,7 +50,7 @@ const Viewer = () => {
           type: "initialize",
           data: { developmentData: developmentsData },
         },
-        "*"
+        "*",
       );
     }
   }, [isLoadingComplete, developmentsData, iframe]);
@@ -68,7 +68,7 @@ const Viewer = () => {
                 },
               ],
             },
-            "*"
+            "*",
           );
         }}
       >
@@ -84,13 +84,15 @@ const Viewer = () => {
           height: "100%",
         }}
         ref={loadingRef}
-      ></h1>
+      >
+      </h1>
       <iframe
         ref={iframe}
         style={{
           width: "100%",
           height: "100%",
-          opacity: isSceneReady ? 1 : 0,
+          // opacity: isSceneReady ? 1 : 0,
+          opacity: 1,
           transition: "opacity 0.2s ease-in-out",
         }}
         src="/viewer/viewer.html"

@@ -1,9 +1,9 @@
 import {
   Color,
-  Vec3,
-  ShaderMaterial,
   SEMANTIC_POSITION,
   SEMANTIC_TEXCOORD0,
+  ShaderMaterial,
+  Vec3,
 } from "playcanvas";
 
 import { viewerSettings } from "./config/settings.js";
@@ -91,11 +91,11 @@ class ViewerApp {
     }
 
     const blendModels = await Promise.all(
-      [...document.querySelectorAll("[blend]")].map((el) => el.ready())
+      [...document.querySelectorAll("[blend]")].map((el) => el.ready()),
     );
 
     const solidModels = await Promise.all(
-      [...document.querySelectorAll("[solid]")].map((el) => el.ready())
+      [...document.querySelectorAll("[solid]")].map((el) => el.ready()),
     );
 
     const custom_material = new ShaderMaterial({
@@ -181,7 +181,7 @@ class ViewerApp {
       if (camera) {
         console.log(
           "initializeModels, developmentsData",
-          this.developmentsData
+          this.developmentsData,
         );
         await this.initializeModels(camera);
 
@@ -191,7 +191,7 @@ class ViewerApp {
           20,
           0,
           [-13, 10, -13],
-          [0, 2, 5]
+          [0, 2, 5],
         );
       }
       return;
