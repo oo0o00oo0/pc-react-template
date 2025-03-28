@@ -13,6 +13,7 @@ import { viewerSettings } from "./config/settings.js";
 import * as handlers from "./state/messageHandlers.js";
 
 import FrameScene from "./camera/frame-scene.mjs";
+import OverlayModel from "./entities/Overlay.mjs";
 //https://playcanvas.vercel.app/#/graphics/shader-burn
 class ViewerApp {
   constructor() {
@@ -169,35 +170,8 @@ class ViewerApp {
     });
 
     solidModels.forEach((modelElement) => {
-      const entity = modelElement.entity;
-
-      const immediateLayer = app.scene.layers.getLayerByName("Immediate");
-
-      const renderComponents = entity.findComponents("render");
-
-      const col1 = new Color(0.24, 0.84, 0.90);
-      const col2 = new Color(0.37, 0.71, 0.77);
-
-      renderComponents.forEach((renderComp) => {
-        renderComp.layers = [immediateLayer.id];
-
-        const name = renderComp.entity.name;
-        console.log(name);
-
-        renderComp.meshInstances.forEach((meshInstance) => {
-          const material = meshInstance.material;
-          // material.emissive = name === "03F" ? col1 : col2;
-          material.diffuse = name === "03F" ? col1 : col2;
-          material.specular = new Color(0.91, 0.33, 0.09);
-          material.shininess = 100;
-          material.opacity = 1;
-          // material.opacity = Math.random() > 0.5
-          //   ? name === "03F" ? 0.9 : 0.4
-          //   : 0.0;
-          material.blendType = BLEND_NORMAL;
-          material.update();
-        });
-      });
+      const model = new OverlayModel(this.app, camera, modelElement);
+      this.models.set(model.name, model);
     });
 
     occlusionModels.forEach((modelElement) => {
