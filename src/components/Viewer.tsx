@@ -10,10 +10,9 @@ const Viewer = () => {
   const loadingRef = useRef<HTMLDivElement>(null);
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
-  const [developmentsData, setDevelopmentData] = useState<DevelopmentData>({
-    ok: false,
-    data: null,
-  });
+  const [developmentsData, setDevelopmentData] = useState<
+    DevelopmentData | null
+  >(null);
 
   useEffect(() => {
     const simulateDataLoad = async () => {

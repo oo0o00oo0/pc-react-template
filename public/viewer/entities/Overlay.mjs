@@ -69,6 +69,7 @@ class OverlayModel {
     this.ray.set(cameraPosition, point.sub(cameraPosition).normalize());
 
     this.obb.worldTransform = this.entity.getWorldTransform();
+    console.log(this.size);
     this.obb.halfExtents.set(this.size.x, this.size.y, this.size.z);
     console.log(this.obb.intersectsRay(this.ray, vec3A));
 
