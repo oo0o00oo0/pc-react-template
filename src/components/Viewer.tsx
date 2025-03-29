@@ -5,10 +5,18 @@ const Viewer = () => {
   const loadingRef = useRef<HTMLDivElement>(null);
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
-  const [developmentsData, setDevelopmentData] = useState<any>({
-    ok: false,
-    data: null,
-  });
+  const [developmentsData, setDevelopmentData] = useState<any>(null);
+
+  useEffect(() => {
+    const simulateDataLoad = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setDevelopmentData({
+        ok: true,
+        data: null,
+      });
+    };
+    simulateDataLoad();
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -60,6 +68,7 @@ const Viewer = () => {
       );
     }
   }, [isLoadingComplete, developmentsData, iframe]);
+  console.log("developmentsData", developmentsData);
 
   const [swirl, setSwirl] = useState(0);
 
@@ -93,6 +102,18 @@ const Viewer = () => {
         }}
         ref={loadingRef}
       >
+      </h1>
+      <h1
+        style={{
+          position: "absolute",
+          top: 40,
+          pointerEvents: "none",
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        {developmentsData ? "ready" : "loading api data"}
       </h1>
       <iframe
         ref={iframe}

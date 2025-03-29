@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import glsl from "vite-plugin-glsl";
@@ -33,6 +34,7 @@ export default defineConfig({
         "src",
         "viewer",
         // Add the project root
+        //@ts-ignore
         dirname(fileURLToPath(import.meta.url)),
       ],
     },
