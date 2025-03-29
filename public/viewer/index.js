@@ -87,7 +87,7 @@ class ViewerApp {
     });
 
     splatAsset.on("load", () => {
-      // this.setupCustomShader(splatAsset);
+      this.setupCustomShader(splatAsset);
     });
   }
 
@@ -214,10 +214,8 @@ class ViewerApp {
       vertex: vert,
     });
 
-    console.log("test_splat", test_splat);
-
     test_splat.name = "test_splat";
-    test_splat.setLocalPosition(0, 3.8, 0);
+    test_splat.setLocalPosition(0, 0, 0);
     test_splat.setLocalScale(1, 1, 1);
     app.root.addChild(test_splat);
   }

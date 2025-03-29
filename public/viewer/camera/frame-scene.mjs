@@ -126,8 +126,6 @@ class FrameScene extends Script {
         if (this.cameraAnim) {
           animating = true;
         }
-
-        // window.parent.postMessage({ type: "firstFrame" }, "*");
       });
     });
 
@@ -143,6 +141,10 @@ class FrameScene extends Script {
     // configure on-demand rendering
     app.autoRender = false;
     updateHorizontalFov(graphicsDevice.width, graphicsDevice.height);
+  }
+
+  postInitialize() {
+    this.initCamera();
   }
 }
 

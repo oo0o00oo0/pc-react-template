@@ -51,7 +51,7 @@ const Viewer = () => {
           data: {
             developmentData: developmentsData,
             camera: {
-              position: [10, 10, 10],
+              position: [-10, 4, -10],
               target: [0, 0, 0],
             },
           },
