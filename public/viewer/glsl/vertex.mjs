@@ -1,9 +1,11 @@
 export default /* glsl */ `
-
 #include "gsplatCommonVS"
 
 varying mediump vec2 gaussianUV;
 varying mediump vec4 gaussianColor;
+
+uniform float uSwirlAmount;
+uniform float uTime;
 
 #ifndef DITHER_NONE
     varying float id;
@@ -11,9 +13,9 @@ varying mediump vec4 gaussianColor;
 
 mediump vec4 discardVec = vec4(0.0, 0.0, 2.0, 1.0);
 
-uniform float uTime;
-uniform float uSwirlAmount;
-
+#ifdef PREPASS_PASS
+    varying float vLinearDepth;
+#endif
 float fade(float radius, float len, float feather){
     return 1.0 - smoothstep(radius - feather, radius + feather, len);
 }
@@ -41,45 +43,22 @@ vec2 transitionInSize(vec3 origin, vec3 center, SplatCorner corner, float speed,
 }
 
 
-vec3 animatePosition(vec3 center) {
-    // modify center
-    float heightIntensity = center.y * 0.2;
-    center.x += sin(uTime * 5.0 + center.y) * 0.3 * heightIntensity;
-
-    // output y-coordinate
-    return center;
-}
-
-vec4 animateColor(float height, vec4 clr) {
-    float sineValue = abs(sin(uTime * 5.0 + height));
-
-    #ifdef CUTOUT
-        // in cutout mode, remove pixels along the wave
-        if (sineValue < 0.5) {
-            clr.a = 0.0;
-        }
-    #else
-        // in non-cutout mode, add a golden tint to the wave
-        vec3 gold = vec3(1.0, 0.85, 0.0);
-        float blend = smoothstep(0.9, 1.0, sineValue);
-        clr.xyz = mix(clr.xyz, gold, blend);
-    #endif
-
-    return clr;
-}
 
 void main(void) {
-    // read gaussian center
+    // read gaussian details
     SplatSource source;
     if (!initSource(source)) {
         gl_Position = discardVec;
         return;
     }
 
-    vec3 centerPos = animatePosition(readCenter(source));
+    vec3 modelCenter = readCenter(source);
 
     SplatCenter center;
-    initCenter(centerPos, center);
+    if (!initCenter(modelCenter, center)) {
+        gl_Position = discardVec;
+        return;
+    }
 
     // project center to screen space
     SplatCorner corner;
@@ -92,36 +71,34 @@ void main(void) {
     vec4 clr = readColor(source);
 
     // evaluate spherical harmonics
-    // #if SH_BANDS > 0
-    //     vec3 dir = normalize(center.view * mat3(center.modelView));
-    //     clr.xyz += evalSH(state, dir);
-    // #endif
-
-
-    clr = animateColor(centerPos.y, clr);
+    #if SH_BANDS > 0
+        // calculate the model-space view direction
+        vec3 dir = normalize(center.view * mat3(center.modelView));
+        clr.xyz += evalSH(source, dir);
+    #endif
 
     clipCorner(corner, clr.w);
 
-    vec3 origin = vec3(0.0);
+      vec3 origin = vec3(0.0);
     float speed = 1.2;
     float transitionDelay = 0.0;
 
-    vec3 modelCenter = readCenter(source);
 
     vec2 size = transitionInSize(origin, modelCenter, corner, speed, transitionDelay);
 
-    // size = mix(size, normalize(corner.offset) * 0.08, float(uSwirlAmount)); 
-
-
     gl_Position = center.proj + vec4(corner.offset * uSwirlAmount, 0.0, 0.0);
 
+    // write output
+    // gl_Position = center.proj + vec4(corner.offset, 0, 0);
     gaussianUV = corner.uv;
     gaussianColor = vec4(prepareOutputFromGamma(max(clr.xyz, 0.0)), clr.w);
 
     #ifndef DITHER_NONE
-        id = float(state.id);
+        id = float(source.id);
+    #endif
+
+    #ifdef PREPASS_PASS
+        vLinearDepth = -center.view.z;
     #endif
 }
-
-
 `;

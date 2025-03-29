@@ -60,19 +60,21 @@ const Viewer = () => {
       );
     }
   }, [isLoadingComplete, developmentsData, iframe]);
+
+  const [swirl, setSwirl] = useState(0);
+
+  const something = [0.1, 1];
   return (
     <>
       <button
         onClick={() => {
+          setSwirl(swirl + 1);
           iframe.current?.contentWindow?.postMessage(
             {
-              type: "set0",
-              activeObjects: [
-                {
-                  id: Math.random(),
-                  state: "on",
-                },
-              ],
+              type: "animateSwirl",
+              data: {
+                swirl: something[swirl % 2],
+              },
             },
             "*",
           );

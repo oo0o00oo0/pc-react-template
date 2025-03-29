@@ -19,6 +19,7 @@ class FrameScene extends Script {
 
     this.position = position && new Vec3(position);
     this.target = target && new Vec3(target);
+    this.isAnimatingSwirl = false;
   }
 
   frameScene(centerPoint, groupSize, zFactor, camPositionEXLP, camTargetEXLP) {
@@ -59,6 +60,43 @@ class FrameScene extends Script {
     this.entity.script.cameraControls.focus(target, position, smooth);
   }
 
+  animateSwirl(duration = 1000, targetSwirl) {
+    if (this.isAnimatingSwirl) return;
+    this.isAnimatingSwirl = true;
+    const startTime = Date.now();
+
+    // Retrieve the current swirl value from the material.
+    const gsplat = this.app.root.findComponent("gsplat");
+    let startSwirl = 0;
+    if (gsplat && gsplat.material) {
+      // If the parameter is not defined, default to 0.
+      startSwirl = gsplat.material.getParameter("uSwirlAmount").data || 0;
+
+      console.log("startSwirl", startSwirl);
+    }
+
+    const animate = () => {
+      const currentTime = Date.now();
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      // Linear interpolation between startSwirl and targetSwirl.
+      const newSwirl = startSwirl * (1 - progress) + targetSwirl * progress;
+
+      if (gsplat && gsplat.material) {
+        console.log("newSwirl", newSwirl);
+        gsplat.material.setParameter("uSwirlAmount", newSwirl);
+        this.app.renderNextFrame = true;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.isAnimatingSwirl = false;
+      }
+    };
+
+    animate();
+  }
+
   initCamera() {
     const { app } = this;
     const { graphicsDevice } = app;
@@ -79,8 +117,6 @@ class FrameScene extends Script {
     );
 
     app.on("update", (deltaTime) => {
-      // console.log("update", deltaTime);
-      // handle camera animation
     });
 
     const prevProj = new Mat4();
@@ -140,6 +176,7 @@ class FrameScene extends Script {
   }
 
   postInitialize() {
+    console.log("postInitialize");
     this.initCamera();
   }
 }

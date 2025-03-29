@@ -8,7 +8,6 @@ import {
   Vec3,
 } from "playcanvas";
 
-import * as pc from "playcanvas";
 import vert from "./glsl/vertex.mjs";
 
 import { viewerSettings } from "./config/settings.js";
@@ -207,6 +206,10 @@ class ViewerApp {
       "pc-entity[name='splat']",
     );
 
+    console.log(
+      "scene_splat_entity",
+      scene_splat_entity.entity.gsplat.material.variants,
+    );
     scene_splat_entity.entity.destroy();
     const test_splat = gsplatAsset.resource.instantiate({
       vertex: vert,
@@ -214,19 +217,29 @@ class ViewerApp {
 
     const material = test_splat.gsplat.material;
 
-    material.setParameter("uSwirlAmount", .1);
+    material.setParameter("uSwirlAmount", 1);
 
-    console.log("material", material);
+    const t = material.variants;
 
     test_splat.name = "test_splat";
     test_splat.setLocalPosition(0, 0, 0);
     test_splat.setLocalScale(1, 1, 1);
     app.root.addChild(test_splat);
+
+    console.log(this.app.autoRender);
   }
 
   async handleMessage(event) {
     if (!this.app) return;
     const { type, data } = event.data;
+
+    if (type === "animateSwirl") {
+      console.log("animateSwirl", data);
+      const { swirl } = data;
+      const { camera } = this.pendingInitialization || {};
+      const frameSceneScript = camera.script.frameScene;
+      frameSceneScript.animateSwirl(300, swirl);
+    }
 
     if (type === "initialize") {
       const { camera: cameraData } = data;
@@ -237,6 +250,7 @@ class ViewerApp {
         await this.initializeModels(camera);
 
         const frameSceneScript = camera.script.frameScene;
+
         frameSceneScript.frameScene(
           new Vec3(0, 0, 0),
           20,
