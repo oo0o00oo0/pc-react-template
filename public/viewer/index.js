@@ -175,7 +175,6 @@ class ViewerApp {
     lights.forEach((lightElement) => {
       const immediateLayer = app.scene.layers.getLayerByName("Immediate");
       const entity = lightElement.entity;
-      console.log("light", entity);
       entity.layers = [immediateLayer.id];
     });
 
@@ -210,15 +209,10 @@ class ViewerApp {
       "pc-entity[name='splat']",
     );
 
-    console.log(
-      "scene_splat_entity",
-      scene_splat_entity.entity.gsplat.material.variants,
-    );
     scene_splat_entity.entity.destroy();
 
     // Load the shader code
     const vert = await loadShader();
-    console.log("vert", vert);
 
     const test_splat = gsplatAsset.resource.instantiate({
       vertex: vert,

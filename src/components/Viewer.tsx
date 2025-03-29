@@ -68,7 +68,6 @@ const Viewer = () => {
       );
     }
   }, [isLoadingComplete, developmentsData, iframe]);
-  console.log("developmentsData", developmentsData);
 
   const [swirl, setSwirl] = useState(0);
 
@@ -91,10 +90,10 @@ const Viewer = () => {
       >
         event
       </button>
-      <h1
+      <h4
         style={{
           position: "absolute",
-          top: 0,
+          top: 20,
           pointerEvents: "none",
           left: 0,
           width: "100%",
@@ -102,8 +101,8 @@ const Viewer = () => {
         }}
         ref={loadingRef}
       >
-      </h1>
-      <h1
+      </h4>
+      <h4
         style={{
           position: "absolute",
           top: 40,
@@ -113,8 +112,8 @@ const Viewer = () => {
           height: "100%",
         }}
       >
-        {developmentsData ? "ready" : "loading api data"}
-      </h1>
+        {developmentsData ? "data loaded" : "loading api data"}
+      </h4>
       <iframe
         ref={iframe}
         style={{
