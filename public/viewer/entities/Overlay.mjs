@@ -31,28 +31,28 @@ class OverlayModel {
     this.camera = camera;
     this.model = model;
     this.entity = model.entity;
-    this.size = new Vec3();
-    this.name = model.entity.name.toLowerCase();
+    this.name = model.name;
 
+    // Create OBB for intersection testing
     this.obb = new OrientedBox();
-    this.ray = new Ray();
 
-    const renderComponents = this.model.entity.findComponents("render");
-    this.center = new Vec3();
-    this.halfExtents = new Vec3();
+    // Get the model's bounding box
+    const meshInstances = this.entity.render.meshInstances;
+    if (meshInstances && meshInstances.length > 0) {
+      const aabb = new pc.BoundingBox();
+      meshInstances[0].mesh.getAabb(aabb);
+      this.halfExtents = aabb.halfExtents.clone();
+      console.log("Overlay created with halfExtents:", this.halfExtents);
+    } else {
+      console.warn("No mesh instances found for overlay:", this.name);
+      this.halfExtents = new pc.Vec3(1, 1, 1);
+    }
 
-    window.addEventListener("pointerup", (evt) => this._onPointerUp(evt));
-    this.app.on("update", this.update, this);
-
-    applyMaterialSettings(model.entity);
-
-    renderComponents.forEach((renderComp) => {
-      renderComp.meshInstances.forEach((meshInstance) => {
-        this.center.copy(meshInstance.aabb.center);
-        this.size.copy(meshInstance.aabb.halfExtents.mulScalar(2));
-        this.halfExtents.copy(meshInstance.aabb.halfExtents);
-      });
-    });
+    // Add the entity and its OBB shape to the ShapePicker
+    this.obb.halfExtents.copy(this.halfExtents);
+    this.obb.worldTransform = this.entity.getWorldTransform();
+    console.log("Registering overlay with ShapePicker:", this.name);
+    app.fire("shapepicker:add", this.entity, this.obb);
 
     this.model.entity.enabled = true;
   }
@@ -63,26 +63,31 @@ class OverlayModel {
     frameSceneScript.frameScene(this.center, this.halfExtents.length(), 0);
   }
 
-  _onPointerUp(evt) {
-    const point = this.camera.camera.screenToWorld(evt.clientX, evt.clientY, 1);
-    const cameraPosition = this.camera.getPosition();
-    this.ray.set(cameraPosition, point.sub(cameraPosition).normalize());
+  // _onPointerUp(evt) {
+  //   const point = this.camera.camera.screenToWorld(evt.clientX, evt.clientY, 1);
+  //   const cameraPosition = this.camera.getPosition();
+  //   this.ray.set(cameraPosition, point.sub(cameraPosition).normalize());
 
-    this.obb.worldTransform = this.entity.getWorldTransform();
-    console.log(this.size);
-    this.obb.halfExtents.set(this.size.x, this.size.y, this.size.z);
-    console.log(this.obb.intersectsRay(this.ray, vec3A));
+  //   this.obb.worldTransform = this.entity.getWorldTransform();
+  //   console.log(this.size);
+  //   this.obb.halfExtents.set(this.size.x, this.size.y, this.size.z);
+  //   console.log(this.obb.intersectsRay(this.ray, vec3A));
 
-    if (this.obb.intersectsRay(this.ray, vec3A)) {
-      window.parent.postMessage(
-        { type: "infoPoint", name: this.entity.name },
-        "*",
-      );
-    }
-  }
+  //   if (this.obb.intersectsRay(this.ray, vec3A)) {
+  //     window.parent.postMessage(
+  //       { type: "infoPoint", name: this.entity.name },
+  //       "*",
+  //     );
+  //   }
+  // }
 
   zoom() {
     this.focusCamera();
+  }
+
+  // Update method to keep the OBB transform in sync
+  update() {
+    this.obb.worldTransform = this.entity.getWorldTransform();
   }
 }
 

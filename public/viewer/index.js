@@ -58,6 +58,10 @@ class ViewerApp {
     camera.camera.clearColor = new Color(viewerSettings.background.color);
     camera.camera.fov = viewerSettings.camera.fov;
     camera.script.create(FrameScene);
+
+    const shapePicker = camera.script.create("shapePicker");
+    shapePicker.cameraEntity = camera;
+
     // camera.script.cameraControls.pitchRange.set(-90, -20);
     // camera.script.cameraControls.enableZoom = false;
     // camera.script.cameraControls.on("clamp:angles", (angles) => {
