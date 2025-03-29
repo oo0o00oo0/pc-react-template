@@ -99,7 +99,7 @@ const Viewer = () => {
         style={{
           width: "100%",
           height: "100%",
-          // opacity: isSceneReady ? 1 : 0,
+          opacity: isSceneReady ? 1 : 0,
 
           transition: "opacity 0.2s ease-in-out",
         }}
