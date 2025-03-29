@@ -70,7 +70,7 @@ class FrameScene extends Script {
     let startSwirl = 0;
     if (gsplat && gsplat.material) {
       // If the parameter is not defined, default to 0.
-      startSwirl = gsplat.material.getParameter("uSwirlAmount").data || 0;
+      startSwirl = gsplat.material.getParameter("uSplatSize").data || 0;
 
       console.log("startSwirl", startSwirl);
     }
@@ -78,12 +78,11 @@ class FrameScene extends Script {
     const animate = () => {
       const currentTime = Date.now();
       const progress = Math.min((currentTime - startTime) / duration, 1);
-      // Linear interpolation between startSwirl and targetSwirl.
       const newSwirl = startSwirl * (1 - progress) + targetSwirl * progress;
 
       if (gsplat && gsplat.material) {
         console.log("newSwirl", newSwirl);
-        gsplat.material.setParameter("uSwirlAmount", newSwirl);
+        gsplat.material.setParameter("uSplatSize", newSwirl);
         this.app.renderNextFrame = true;
       }
 

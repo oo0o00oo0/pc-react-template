@@ -217,7 +217,7 @@ class ViewerApp {
 
     const material = test_splat.gsplat.material;
 
-    material.setParameter("uSwirlAmount", 1);
+    material.setParameter("uSplatSize", 1);
 
     const t = material.variants;
 

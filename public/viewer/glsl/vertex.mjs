@@ -4,7 +4,7 @@ export default /* glsl */ `
 varying mediump vec2 gaussianUV;
 varying mediump vec4 gaussianColor;
 
-uniform float uSwirlAmount;
+uniform float uSplatSize;
 uniform float uTime;
 
 #ifndef DITHER_NONE
@@ -79,19 +79,21 @@ void main(void) {
 
     clipCorner(corner, clr.w);
 
-      vec3 origin = vec3(0.0);
+    vec3 origin = vec3(0.0);
     float speed = 1.2;
     float transitionDelay = 0.0;
 
 
     vec2 size = transitionInSize(origin, modelCenter, corner, speed, transitionDelay);
 
-    gl_Position = center.proj + vec4(corner.offset * uSwirlAmount, 0.0, 0.0);
+    gl_Position = center.proj + vec4(corner.offset * uSplatSize, 0.0, 0.0);
+
+    vec4 colMix = mix( vec4(0.26, 0.94, 1.00, 1.0), clr, uSplatSize);
 
     // write output
     // gl_Position = center.proj + vec4(corner.offset, 0, 0);
     gaussianUV = corner.uv;
-    gaussianColor = vec4(prepareOutputFromGamma(max(clr.xyz, 0.0)), clr.w);
+    gaussianColor = vec4(prepareOutputFromGamma(max(colMix.xyz, 0.0)), colMix.w);
 
     #ifndef DITHER_NONE
         id = float(source.id);
