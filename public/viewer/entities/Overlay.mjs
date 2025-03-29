@@ -41,7 +41,6 @@ class OverlayModel {
     this.center = new Vec3();
     this.halfExtents = new Vec3();
 
-    window.addEventListener("pointerup", (evt) => this._onPointerUp(evt));
     this.app.on("update", this.update, this);
 
     app.fire("shapepicker:add", this.entity, this.obb);
@@ -63,24 +62,6 @@ class OverlayModel {
     const cameraEntity = this.app.root.findByName("camera");
     const frameSceneScript = cameraEntity.script.frameScene;
     frameSceneScript.frameScene(this.center, this.halfExtents.length(), 0);
-  }
-
-  _onPointerUp(evt) {
-    const point = this.camera.camera.screenToWorld(evt.clientX, evt.clientY, 1);
-    const cameraPosition = this.camera.getPosition();
-    this.ray.set(cameraPosition, point.sub(cameraPosition).normalize());
-
-    this.obb.worldTransform = this.entity.getWorldTransform();
-    console.log(this.size);
-    this.obb.halfExtents.set(this.size.x, this.size.y, this.size.z);
-    console.log(this.obb.intersectsRay(this.ray, vec3A));
-
-    if (this.obb.intersectsRay(this.ray, vec3A)) {
-      window.parent.postMessage(
-        { type: "infoPoint", name: this.entity.name },
-        "*",
-      );
-    }
   }
 
   zoom() {
