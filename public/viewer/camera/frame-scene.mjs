@@ -66,8 +66,6 @@ class FrameScene extends Script {
     // get the gsplat component
     const gsplatComponent = app.root.findComponent("gsplat");
 
-    console.log(gsplatComponent.entity.gsplat.resource);
-
     const events = ["wheel", "pointerdown", "contextmenu"];
 
     const handler = (e) => {
@@ -115,8 +113,6 @@ class FrameScene extends Script {
     // wait for first gsplat sort
     const handle = gsplatComponent?.instance?.sorter?.on("updated", () => {
       handle.off();
-
-      console.log(gsplatComponent?.resource);
 
       app.renderNextFrame = true;
 

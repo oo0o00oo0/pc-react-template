@@ -208,11 +208,15 @@ class ViewerApp {
     );
 
     scene_splat_entity.entity.destroy();
-    console.log("scene_splat_entity", scene_splat_entity.model);
-    console.log("gsplatAsset", gsplatAsset);
     const test_splat = gsplatAsset.resource.instantiate({
       vertex: vert,
     });
+
+    const material = test_splat.gsplat.material;
+
+    material.setParameter("uSwirlAmount", .1);
+
+    console.log("material", material);
 
     test_splat.name = "test_splat";
     test_splat.setLocalPosition(0, 0, 0);

@@ -12,6 +12,34 @@ varying mediump vec4 gaussianColor;
 mediump vec4 discardVec = vec4(0.0, 0.0, 2.0, 1.0);
 
 uniform float uTime;
+uniform float uSwirlAmount;
+
+float fade(float radius, float len, float feather){
+    return 1.0 - smoothstep(radius - feather, radius + feather, len);
+}
+
+vec2 transitionInSize(vec3 origin, vec3 center, SplatCorner corner, float speed, float startDelay){
+
+    float power = 2.0; // transition curve
+    float secondaryFadeDelay = 0.7; // The delay between the first and second animation
+    float pixelSize = 0.01; // The size of the initial particle pass
+    float fadeBlend = 0.3; // Higher values create a softer feathered fade edge
+
+    float radius = (uTime - startDelay) * speed;
+    float len = length(origin - center);
+
+    // Initial particle transition
+    vec2 sizeA = normalize(corner.offset) * fade(pow(radius, 1.2), len, fadeBlend) * pixelSize;
+
+    // Secondary full transition
+    radius = max(0.0, (uTime - startDelay - secondaryFadeDelay)) * speed;
+    float fullFade = fade(pow(radius, power), len, fadeBlend);
+    vec2 sizeB = corner.offset * fullFade;
+    
+    // mix between the two
+    return mix(sizeA, sizeB, fullFade);
+}
+
 
 vec3 animatePosition(vec3 center) {
     // modify center
@@ -69,12 +97,24 @@ void main(void) {
     //     clr.xyz += evalSH(state, dir);
     // #endif
 
+
     clr = animateColor(centerPos.y, clr);
 
     clipCorner(corner, clr.w);
 
-    // write output
-    gl_Position = center.proj + vec4(corner.offset, 0.0, 0.0);
+    vec3 origin = vec3(0.0);
+    float speed = 1.2;
+    float transitionDelay = 0.0;
+
+    vec3 modelCenter = readCenter(source);
+
+    vec2 size = transitionInSize(origin, modelCenter, corner, speed, transitionDelay);
+
+    // size = mix(size, normalize(corner.offset) * 0.08, float(uSwirlAmount)); 
+
+
+    gl_Position = center.proj + vec4(corner.offset * uSwirlAmount, 0.0, 0.0);
+
     gaussianUV = corner.uv;
     gaussianColor = vec4(prepareOutputFromGamma(max(clr.xyz, 0.0)), clr.w);
 
