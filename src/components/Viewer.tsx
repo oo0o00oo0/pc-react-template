@@ -48,7 +48,13 @@ const Viewer = () => {
       iframe.current?.contentWindow?.postMessage(
         {
           type: "initialize",
-          data: { developmentData: developmentsData },
+          data: {
+            developmentData: developmentsData,
+            camera: {
+              position: [10, 100, 100],
+              target: [-10, 50, 20],
+            },
+          },
         },
         "*",
       );
@@ -91,8 +97,7 @@ const Viewer = () => {
         style={{
           width: "100%",
           height: "100%",
-          // opacity: isSceneReady ? 1 : 0,
-          opacity: 1,
+          opacity: isSceneReady ? 1 : 0,
           transition: "opacity 0.2s ease-in-out",
         }}
         src="/viewer/viewer.html"

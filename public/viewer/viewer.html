@@ -12,20 +12,14 @@
     <script type="importmap">
       {
         "imports": {
-          "playcanvas": "./playcanvas.mjs",
-          "spline": "./spline.js"
+          "playcanvas": "./pc/playcanvas.mjs"
         }
       }
     </script>
     <script
       type="module"
-      src="https://cdn.jsdelivr.net/npm/@playcanvas/web-components@0.1.13/dist/pwc.mjs"
+      src="./pc/pwc.mjs"
     ></script>
-    <script type="module">
-      window.settings = fetch("./settings.json").then((response) =>
-        response.json()
-      );
-    </script>
   </head>
 
   <body>
@@ -60,7 +54,6 @@
             </pc-scripts>
           </pc-entity>
         </pc-entity>
-        <!-- Light (for XR controllers) -->
         <pc-entity
           rotation="0 2.5 0"
           position="-60 25 -5"
@@ -82,19 +75,6 @@
           solid
         >
           <pc-model asset="overlays"> </pc-model>
-        </pc-entity>
-
-        <pc-entity
-          position="5 0 0"
-          rotation="30 0 0"
-          scale="1 1 1"
-          name="light"
-          light
-        >
-          <pc-light type="directional" color="white" intensity="1"></pc-light>
-        </pc-entity>
-        <pc-entity light>
-          <pc-light type="omni" color="white" intensity="1"></pc-light>
         </pc-entity>
 
         <!-- Splat -->

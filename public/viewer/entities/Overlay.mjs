@@ -1,5 +1,5 @@
-import { BLEND_NORMAL, Color, Vec3 } from "playcanvas";
-
+import { BLEND_NORMAL, Color, OrientedBox, Ray, Vec3 } from "playcanvas";
+const vec3A = new Vec3();
 class OverlayModel {
   constructor(app, camera, model) {
     const applyMaterialSettings = (entity) => {
@@ -30,22 +30,30 @@ class OverlayModel {
     this.app = app;
     this.camera = camera;
     this.model = model;
+    this.entity = model.entity;
+    this.size = new Vec3();
     this.name = model.entity.name.toLowerCase();
+
+    this.obb = new OrientedBox();
+    this.ray = new Ray();
 
     const renderComponents = this.model.entity.findComponents("render");
     this.center = new Vec3();
     this.halfExtents = new Vec3();
+
+    window.addEventListener("pointerup", (evt) => this._onPointerUp(evt));
+    this.app.on("update", this.update, this);
 
     applyMaterialSettings(model.entity);
 
     renderComponents.forEach((renderComp) => {
       renderComp.meshInstances.forEach((meshInstance) => {
         this.center.copy(meshInstance.aabb.center);
+        this.size.copy(meshInstance.aabb.halfExtents.mulScalar(2));
         this.halfExtents.copy(meshInstance.aabb.halfExtents);
       });
     });
 
-    // initialise off
     this.model.entity.enabled = true;
   }
 
@@ -55,43 +63,24 @@ class OverlayModel {
     frameSceneScript.frameScene(this.center, this.halfExtents.length(), 0);
   }
 
-  // setMaterialBlendMode(blendType) {
-  //   const renderComponents = this.model.entity.findComponents("render");
-  //   renderComponents.forEach((renderComp) => {
-  //     renderComp.meshInstances.forEach((meshInstance) => {
-  //       if (blendType === "default") {
-  //         // Restore the original blend mode
-  //         meshInstance.material.blendType = this.originalBlendModes.get(
-  //           meshInstance,
-  //         );
-  //       } else {
-  //         meshInstance.material.blendType = blendType;
-  //       }
-  //       meshInstance.material.update();
-  //     });
-  //   });
-  // }
+  _onPointerUp(evt) {
+    const point = this.camera.camera.screenToWorld(evt.clientX, evt.clientY, 1);
+    const cameraPosition = this.camera.getPosition();
+    this.ray.set(cameraPosition, point.sub(cameraPosition).normalize());
 
-  // setMaterialColor(color) {
-  //   const renderComponents = this.model.entity.findComponents("render");
-  //   renderComponents.forEach((renderComp) => {
-  //     renderComp.meshInstances.forEach((meshInstance) => {
-  //       meshInstance.material.emissive = color;
-  //     });
-  //   });
-  // }
+    this.obb.worldTransform = this.entity.getWorldTransform();
+    this.obb.halfExtents.set(this.size.x, this.size.y, this.size.z);
+    console.log(this.obb.intersectsRay(this.ray, vec3A));
 
-  // outline() {
-  //   this.model.entity.enabled = true;
-  //   this.infoPoint.entity.enabled = false;
-  //   this.setMaterialBlendMode(7); // The blend mode you're using for outline
-  // }
+    if (this.obb.intersectsRay(this.ray, vec3A)) {
+      window.parent.postMessage(
+        { type: "infoPoint", name: this.entity.name },
+        "*",
+      );
+    }
+  }
 
   zoom() {
-    // console.log("ZOOM");
-    // this.model.entity.enabled = true;
-    // this.infoPoint.entity.enabled = false;
-    // this.setMaterialBlendMode("default");
     this.focusCamera();
   }
 }

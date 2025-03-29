@@ -200,9 +200,12 @@ class ViewerApp {
     const { type, data } = event.data;
 
     if (type === "initialize") {
-      console.log("initialize", data);
+      const { camera: cameraData } = data;
+      console.log("cameraData", cameraData);
       this.developmentsData = data.developmentData;
       const { camera } = this.pendingInitialization || {};
+
+      console.log("camera", camera);
       if (camera) {
         console.log(
           "initializeModels, developmentsData",
@@ -215,8 +218,8 @@ class ViewerApp {
           new Vec3(0, 0, 0),
           20,
           0,
-          [-183, 160, -183],
-          [0, 2, 5],
+          cameraData.position,
+          cameraData.target,
         );
       }
       return;
