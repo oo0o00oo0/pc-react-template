@@ -22,6 +22,15 @@ class FrameScene extends Script {
   frameScene(centerPoint, groupSize, zFactor, camPositionEXLP, camTargetEXLP) {
     let target;
 
+    console.log(
+      "frameScene",
+      centerPoint,
+      groupSize,
+      zFactor,
+      camPositionEXLP,
+      camTargetEXLP,
+    );
+
     if (camTargetEXLP) {
       target = new Vec3(camTargetEXLP);
     } else {

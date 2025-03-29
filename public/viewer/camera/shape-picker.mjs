@@ -99,28 +99,72 @@ ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
 
     console.log("Hit detected on entity:", entity.name);
 
-    // Get the world position of the hit
-    const worldPos = new pc.Vec3();
+    // Create a ray from the camera through the screen point
+    const ray = new pc.Ray();
     this.cameraEntity.camera.screenToWorld(
       scaledX,
       scaledY,
-      meshInstance.distance,
-      worldPos,
+      this.cameraEntity.camera.farClip,
+      ray.direction,
     );
-    this.hitPosition.copy(worldPos);
+    ray.origin.copy(this.cameraEntity.getPosition());
+    ray.direction.sub(ray.origin).normalize();
+
+    // Calculate the hit position using the mesh distance
+    this.hitPosition.copy(ray.direction).scale(meshInstance.distance).add(
+      ray.origin,
+    );
+
+    console.log("Hit position:", this.hitPosition);
+
+    // Get the specific mesh instance's AABB for camera framing
+    // This uses the actual clicked mesh, not the entire entity hierarchy
+    let aabb = meshInstance.aabb.clone();
+    let centerPoint = aabb.center.clone();
+    let size =
+      Math.max(aabb.halfExtents.x, aabb.halfExtents.y, aabb.halfExtents.z) * 2;
+
+    console.log("Mesh AABB center:", centerPoint, "size:", size);
 
     // Execute any registered callbacks for this entity and event type
-    this.executePointerCallback(entity.name, eventType, this.hitPosition);
+    this.executePointerCallback(entity.name, eventType, this.hitPosition, {
+      aabb: aabb,
+      centerPoint: centerPoint,
+      size: size,
+    });
 
     // Send message to parent when overlay is clicked
     window.parent.postMessage(
-      { type: "infoPoint", name: entity.name, eventType: eventType },
+      {
+        type: "infoPoint",
+        name: entity.name,
+        eventType: eventType,
+        position: {
+          x: this.hitPosition.x,
+          y: this.hitPosition.y,
+          z: this.hitPosition.z,
+        },
+        aabb: {
+          center: {
+            x: centerPoint.x,
+            y: centerPoint.y,
+            z: centerPoint.z,
+          },
+          size: size,
+        },
+      },
       "*",
     );
 
     if (this.hitMarkerEntity) {
       this.hitMarkerEntity.setPosition(this.hitPosition);
       this.hitMarkerEntity.enabled = true;
+    }
+
+    // If it's a click event, frame the camera on this object
+    if (eventType === "click") {
+      console.log("FRAME");
+      this.frameCameraOnEntity(entity, centerPoint, size);
     }
 
     return true;
@@ -178,6 +222,7 @@ ShapePicker.prototype.executePointerCallback = function (
   entityName,
   eventType,
   position,
+  aabbInfo,
 ) {
   if (
     this.pointerCallbacks[entityName] &&
@@ -189,7 +234,69 @@ ShapePicker.prototype.executePointerCallback = function (
         entityName: entityName,
         position: position,
         type: eventType,
+        aabb: aabbInfo,
       });
     });
   }
+};
+
+// Get the AABB of an entity, including all child meshes
+ShapePicker.prototype.getEntityAABB = function (entity) {
+  let aabb = new pc.BoundingBox();
+  let initialized = false;
+
+  // Function to process a single entity
+  const processEntity = (ent) => {
+    // Check if entity has a model component
+    if (
+      ent.model && ent.model.meshInstances && ent.model.meshInstances.length > 0
+    ) {
+      // Get the model's AABB in world space
+      const modelAabb = ent.model.aabb;
+
+      if (!initialized) {
+        aabb.copy(modelAabb);
+        initialized = true;
+      } else {
+        aabb.add(modelAabb);
+      }
+    }
+
+    // Process all children recursively
+    for (let i = 0; i < ent.children.length; i++) {
+      processEntity(ent.children[i]);
+    }
+  };
+
+  // Start processing from the given entity
+  processEntity(entity);
+
+  // If no model was found, create a default AABB based on entity position
+  if (!initialized) {
+    const worldPos = entity.getPosition();
+    const defaultSize = 1; // Default size if no model is found
+
+    aabb.center = worldPos;
+    aabb.halfExtents = new pc.Vec3(defaultSize, defaultSize, defaultSize);
+  }
+
+  return aabb;
+};
+
+// Frame the camera on an entity using the FrameScene script
+ShapePicker.prototype.frameCameraOnEntity = function (
+  entity,
+  centerPoint,
+  size,
+) {
+  // Find the camera with the FrameScene script
+
+  console.log("Framing camera on entity:", entity.name);
+
+  // Default Z factor (adjust as needed)
+  const zFactor = 0;
+
+  const cameraEntity = this.app.root.findByName("camera");
+  const frameSceneScript = cameraEntity.script.frameScene;
+  frameSceneScript.frameScene(centerPoint, 100, 0);
 };
