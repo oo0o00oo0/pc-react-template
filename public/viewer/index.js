@@ -8,6 +8,9 @@ import {
   Vec3,
 } from "playcanvas";
 
+import * as pc from "playcanvas";
+import vert from "./glsl/vertex.mjs";
+
 import { viewerSettings } from "./config/settings.js";
 
 import * as handlers from "./state/messageHandlers.js";
@@ -66,21 +69,25 @@ class ViewerApp {
 
     this.pendingInitialization = { camera };
 
-    if (this.developmentsData) {
-      await this.initializeModels(camera, outliner);
-    }
+    // if (this.developmentsData) {
+    //   await this.initializeModels(camera, outliner);
+    // }
   }
 
   monitorSplatAssetLoading() {
     const splatAssets = this.app.assets.filter((a) => a.type === "gsplat");
+
     if (!splatAssets.length) return;
 
     const splatAsset = splatAssets[0];
 
-    console.log(splatAsset.entity);
     splatAsset.on("progress", (received, length) => {
       const percent = (Math.min(1, received / length) * 100).toFixed(0);
       window.parent.postMessage({ type: "loading", received, v: percent }, "*");
+    });
+
+    splatAsset.on("load", () => {
+      // this.setupCustomShader(splatAsset);
     });
   }
 
@@ -195,22 +202,36 @@ class ViewerApp {
     window.parent.postMessage({ type: "scene-ready" }, "*");
   }
 
+  setupCustomShader(gsplatAsset) {
+    const scene_splat_entity = document.querySelector(
+      "pc-entity[name='splat']",
+    );
+
+    scene_splat_entity.entity.destroy();
+    console.log("scene_splat_entity", scene_splat_entity.model);
+    console.log("gsplatAsset", gsplatAsset);
+    const test_splat = gsplatAsset.resource.instantiate({
+      vertex: vert,
+    });
+
+    console.log("test_splat", test_splat);
+
+    test_splat.name = "test_splat";
+    test_splat.setLocalPosition(0, 3.8, 0);
+    test_splat.setLocalScale(1, 1, 1);
+    app.root.addChild(test_splat);
+  }
+
   async handleMessage(event) {
     if (!this.app) return;
     const { type, data } = event.data;
 
     if (type === "initialize") {
       const { camera: cameraData } = data;
-      console.log("cameraData", cameraData);
       this.developmentsData = data.developmentData;
       const { camera } = this.pendingInitialization || {};
 
-      console.log("camera", camera);
       if (camera) {
-        console.log(
-          "initializeModels, developmentsData",
-          this.developmentsData,
-        );
         await this.initializeModels(camera);
 
         const frameSceneScript = camera.script.frameScene;
@@ -233,3 +254,25 @@ class ViewerApp {
 }
 
 new ViewerApp();
+
+// const createSplatInstance = (
+//   name,
+//   asset,
+//   px,
+//   py,
+//   pz,
+//   scale,
+//   vertex,
+//   fragment,
+// ) => {
+//   const entity = new pc.Entity(name);
+//   entity.addComponent("gsplat", {
+//     asset: asset,
+//   });
+//   entity.setLocalPosition(px, py, pz);
+//   entity.setLocalEulerAngles(180, 90, 0);
+//   entity.setLocalScale(scale, scale, scale);
+//   app.root.addChild(entity);
+
+//   return entity;
+// };

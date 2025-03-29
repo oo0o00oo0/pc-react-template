@@ -144,45 +144,6 @@ class FrameScene extends Script {
     app.autoRender = false;
     updateHorizontalFov(graphicsDevice.width, graphicsDevice.height);
   }
-
-  postInitialize() {
-    const assets = this.app.assets.filter((asset) => asset.type === "gsplat");
-
-    console.log("assets", assets);
-    if (assets.length > 0) {
-      const asset = assets[0];
-
-      if (asset.loaded) {
-        this.initCamera();
-      } else {
-        asset.on("load", () => {
-          // this.setupCustomShader(asset);
-          this.initCamera();
-        });
-      }
-    }
-  }
-
-  setupCustomShader(gsplatAsset) {
-    // console.log(gsplatAsset.entity);
-
-    //  const materialOptions = {
-    //         vertex: vert
-    //     };
-    //     biker1.gsplat.materialOptions = useCustomShader ? materialOptions : null;
-    //     biker2.gsplat.materialOptions = useCustomShader ? materialOptions : null;
-
-    //     // biker 2 uses a different shader variant
-    //     biker2.gsplat.material.setDefine('CUTOUT', true);
-    const test_splat = gsplatAsset.resource.instantiate({
-      vertex: vert,
-    });
-
-    test_splat.name = "test_splat";
-    test_splat.setLocalPosition(0, 3.8, 0);
-    test_splat.setLocalScale(1, 1, 1);
-    app.root.addChild(test_splat);
-  }
 }
 
 // // helper function to create a splat instance
