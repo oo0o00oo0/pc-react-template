@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
+type DevelopmentData = {
+  ok: boolean;
+  data: string | null;
+};
+
 const Viewer = () => {
   const iframe = useRef<HTMLIFrameElement>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
-  const [developmentsData, setDevelopmentData] = useState<any>(null);
+  const [developmentsData, setDevelopmentData] = useState<DevelopmentData>({
+    ok: false,
+    data: null,
+  });
 
   useEffect(() => {
     const simulateDataLoad = async () => {
