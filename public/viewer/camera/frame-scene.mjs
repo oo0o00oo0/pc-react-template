@@ -1,9 +1,6 @@
 import { Mat4, Script, Vec3 } from "playcanvas";
 import { nearlyEquals, viewerSettings } from "../config/settings.js";
-import * as pc from "playcanvas";
 
-import vert from "../glsl/vertex.mjs";
-import frag from "../glsl/fragment.mjs";
 // console.log(vert);
 
 // console.log(pc.version);

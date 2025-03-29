@@ -8,7 +8,11 @@ import {
   Vec3,
 } from "playcanvas";
 
-import vert from "./glsl/vertex.mjs";
+// Use dynamic import for the shader
+async function loadShader() {
+  const response = await fetch("/viewer/glsl/vert.vert");
+  return response.text();
+}
 
 import { viewerSettings } from "./config/settings.js";
 
@@ -201,7 +205,7 @@ class ViewerApp {
     window.parent.postMessage({ type: "scene-ready" }, "*");
   }
 
-  setupCustomShader(gsplatAsset) {
+  async setupCustomShader(gsplatAsset) {
     const scene_splat_entity = document.querySelector(
       "pc-entity[name='splat']",
     );
@@ -211,6 +215,11 @@ class ViewerApp {
       scene_splat_entity.entity.gsplat.material.variants,
     );
     scene_splat_entity.entity.destroy();
+
+    // Load the shader code
+    const vert = await loadShader();
+    console.log("vert", vert);
+
     const test_splat = gsplatAsset.resource.instantiate({
       vertex: vert,
     });
