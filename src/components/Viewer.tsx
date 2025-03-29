@@ -13,7 +13,7 @@ const Viewer = () => {
   const [developmentsData, setDevelopmentData] = useState<
     DevelopmentData | null
   >(null);
-
+  const [activeUnit, setActiveUnit] = useState<string | null>(null);
   useEffect(() => {
     const simulateDataLoad = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -40,18 +40,14 @@ const Viewer = () => {
       if (event.data.type === "scene-ready") {
         setIsSceneReady(true);
       }
-    };
-    //   if (event.data.type === "infoPoint") {
-    //     if (!developmentsData) return;
-    //     const id = event.data.name.replace("info-point-", "");
-    //     console.log("infoPoint", id);
+      if (event.data.type === "infoPoint") {
+        console.log("infoPoint", event.data);
+        const id = event.data.name;
 
-    //     const devID = developmentsData[id];
-    //     if (devID) {
-    //       setStoreState({ activeDevelopment: devID });
-    //     }
-    //   }
-    // };
+        setActiveUnit(id);
+        console.log("infoPoint", id);
+      }
+    };
 
     window.addEventListener("message", handleMessage);
     return () => {
@@ -97,6 +93,16 @@ const Viewer = () => {
       >
         event
       </button>
+      <h4
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          pointerEvents: "none",
+        }}
+      >
+        {activeUnit}
+      </h4>
       <h4
         style={{
           position: "absolute",

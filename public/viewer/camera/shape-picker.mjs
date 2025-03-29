@@ -14,21 +14,26 @@ ShapePicker.attributes.add("hitMarkerEntity", {
 
 // initialize code called once per entity
 ShapePicker.prototype.initialize = function () {
-  // More information about pc.ray: http://developer.playcanvas.com/en/api/pc.Ray.html
-  this.ray = new pc.Ray();
-
   console.log("ShapePicker initialized");
 
-  // Keep an array of all the entities we can pick at
-  this.pickableEntities = [];
-  this.pickableShapes = [];
+  // Create a PlayCanvas Picker for more accurate mesh picking
+  this.picker = new pc.Picker(
+    this.app,
+    this.app.graphicsDevice.width,
+    this.app.graphicsDevice.height,
+  );
+
+  // Add event callbacks storage for pointer events
+  this.pointerCallbacks = {};
 
   // Register events for when pickable entities are created
-  this.app.on("shapepicker:add", this.addItem, this);
-  this.app.on("shapepicker:remove", this.removeItem, this);
+  this.app.on("shapepicker:registerEvent", this.registerPointerEvent, this);
 
   // Register the mouse down and touch start event so we know when the user has clicked
   this.app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+
+  // Add mouse move event for hover effects
+  // this.app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
 
   if (this.app.touch) {
     this.app.touch.on(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
@@ -39,6 +44,7 @@ ShapePicker.prototype.initialize = function () {
   this.on("destroy", function () {
     // Clean up our event handlers if the script is destroyed
     this.app.mouse.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+    this.app.mouse.off(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
 
     if (this.app.touch) {
       this.app.touch.off(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
@@ -46,64 +52,101 @@ ShapePicker.prototype.initialize = function () {
   }, this);
 };
 
-ShapePicker.prototype.doRayCast = function (screenPosition) {
-  console.log("doRayCast called with position:", screenPosition);
+ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
+  console.log(
+    "doPickerSelection called with position:",
+    screenPosition,
+    "event:",
+    eventType,
+  );
 
   if (!this.cameraEntity || !this.cameraEntity.camera) {
     console.warn("Camera entity not properly initialized in ShapePicker");
     return;
   }
 
-  // Initialise the ray and work out the direction of the ray from the screen position
-  this.cameraEntity.camera.screenToWorld(
-    screenPosition.x,
-    screenPosition.y,
-    this.cameraEntity.camera.farClip,
-    this.ray.direction,
-  );
-  this.ray.origin.copy(this.cameraEntity.getPosition());
-  this.ray.direction.sub(this.ray.origin).normalize();
+  // Get screen coordinates properly from mouse or touch event
+  let x, y;
+  if (screenPosition.x !== undefined) {
+    // It's already a position object
+    x = screenPosition.x;
+    y = screenPosition.y;
+  } else {
+    // It's a mouse/touch event
+    x = screenPosition.x || screenPosition.clientX;
+    y = screenPosition.y || screenPosition.clientY;
+  }
 
-  console.log(this.pickableEntities);
+  // Get canvas dimensions for scaling
+  const canvas = this.app.graphicsDevice.canvas;
+  const canvasRect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / canvasRect.width;
+  const scaleY = canvas.height / canvasRect.height;
 
-  console.log("Ray origin:", this.ray.origin);
-  console.log("Ray direction:", this.ray.direction);
-  console.log("Number of pickable entities:", this.pickableEntities.length);
+  // Scale the coordinates
+  const scaledX = x * scaleX;
+  const scaledY = y * scaleY;
 
-  // Test the ray against all the objects registered to this picker
-  for (var i = 0; i < this.pickableShapes.length; ++i) {
-    var pickableShape = this.pickableShapes[i];
-    var entity = this.pickableEntities[i];
-    console.log("Testing intersection with entity:", entity.name);
-    var result = pickableShape.intersectsRay(this.ray, this.hitPosition);
+  // Prepare the picker with the current camera and scene
+  this.picker.prepare(this.cameraEntity.camera, this.app.scene);
 
-    console.log("result", result);
+  // Perform the picking
+  const result = this.picker.getSelection(scaledX, scaledY);
 
-    if (result) {
-      console.log("Hit detected on entity:", entity.name);
-      // Send message to parent when overlay is clicked
-      window.parent.postMessage(
-        { type: "infoPoint", name: entity.name },
-        "*",
-      );
-      if (this.hitMarkerEntity) {
-        this.hitMarkerEntity.setPosition(this.hitPosition);
-      }
-      break;
+  if (result.length > 0) {
+    const meshInstance = result[0];
+    const entity = meshInstance.node;
+
+    console.log("Hit detected on entity:", entity.name);
+
+    // Get the world position of the hit
+    const worldPos = new pc.Vec3();
+    this.cameraEntity.camera.screenToWorld(
+      scaledX,
+      scaledY,
+      meshInstance.distance,
+      worldPos,
+    );
+    this.hitPosition.copy(worldPos);
+
+    // Execute any registered callbacks for this entity and event type
+    this.executePointerCallback(entity.name, eventType, this.hitPosition);
+
+    // Send message to parent when overlay is clicked
+    window.parent.postMessage(
+      { type: "infoPoint", name: entity.name, eventType: eventType },
+      "*",
+    );
+
+    if (this.hitMarkerEntity) {
+      this.hitMarkerEntity.setPosition(this.hitPosition);
+      this.hitMarkerEntity.enabled = true;
     }
+
+    return true;
+  } else {
+    console.log("No hit detected");
+    if (this.hitMarkerEntity) {
+      this.hitMarkerEntity.enabled = false;
+    }
+    return false;
   }
 };
 
 ShapePicker.prototype.onMouseDown = function (event) {
   if (event.button == pc.MOUSEBUTTON_LEFT) {
-    this.doRayCast(event);
+    this.doPickerSelection(event, "click");
   }
+};
+
+ShapePicker.prototype.onMouseMove = function (event) {
+  this.doPickerSelection(event, "hover");
 };
 
 ShapePicker.prototype.onTouchStart = function (event) {
   // On perform the raycast logic if the user has one finger on the screen
   if (event.touches.length == 1) {
-    this.doRayCast(event.touches[0]);
+    this.doPickerSelection(event.touches[0], "touch");
 
     // Android registers the first touch as a mouse event so it is possible for
     // the touch event and mouse event to be triggered at the same time
@@ -112,19 +155,41 @@ ShapePicker.prototype.onTouchStart = function (event) {
   }
 };
 
-ShapePicker.prototype.addItem = function (entity, shape) {
-  console.log("Adding pickable item:", entity.name);
-  if (entity) {
-    this.pickableEntities.push(entity);
-    this.pickableShapes.push(shape);
-    console.log("Current pickable items:", this.pickableEntities.length);
+// Register a pointer event callback for a specific entity
+ShapePicker.prototype.registerPointerEvent = function (
+  entityName,
+  eventType,
+  callback,
+) {
+  if (!this.pointerCallbacks[entityName]) {
+    this.pointerCallbacks[entityName] = {};
   }
+
+  if (!this.pointerCallbacks[entityName][eventType]) {
+    this.pointerCallbacks[entityName][eventType] = [];
+  }
+
+  this.pointerCallbacks[entityName][eventType].push(callback);
+  console.log(`Registered ${eventType} event for ${entityName}`);
 };
 
-ShapePicker.prototype.removeItem = function (entity) {
-  var i = this._items.indexOf(entity);
-  if (i >= 0) {
-    this.pickableEntities.splice(i, 1);
-    this.pickableShapes.splice(i, 1);
+// Execute registered callbacks for an entity and event type
+ShapePicker.prototype.executePointerCallback = function (
+  entityName,
+  eventType,
+  position,
+) {
+  if (
+    this.pointerCallbacks[entityName] &&
+    this.pointerCallbacks[entityName][eventType]
+  ) {
+    const callbacks = this.pointerCallbacks[entityName][eventType];
+    callbacks.forEach((callback) => {
+      callback({
+        entityName: entityName,
+        position: position,
+        type: eventType,
+      });
+    });
   }
 };
