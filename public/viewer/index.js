@@ -108,11 +108,11 @@ class ViewerApp {
     }
 
     const blendModels = await Promise.all(
-      [...document.querySelectorAll("[blend]")].map((el) => el.ready()),
+      [...document.querySelectorAll("[blend]")].map((el) => el.ready())
     );
 
     const solidModels = await Promise.all(
-      [...document.querySelectorAll("[solid]")].map((el) => el.ready()),
+      [...document.querySelectorAll("[solid]")].map((el) => el.ready())
     );
 
     const custom_material = new ShaderMaterial({
@@ -169,11 +169,12 @@ class ViewerApp {
     // });
 
     const occlusionModels = await Promise.all(
-      [...document.querySelectorAll("[occlusion]")].map((el) => el.ready()),
+      [...document.querySelectorAll("[occlusion]")].map((el) => el.ready())
     );
 
+    console.log(occlusionModels);
     const lights = await Promise.all(
-      [...document.querySelectorAll("[light]")].map((el) => el.ready()),
+      [...document.querySelectorAll("[light]")].map((el) => el.ready())
     );
 
     lights.forEach((lightElement) => {
@@ -191,6 +192,8 @@ class ViewerApp {
       const immediateLayer = app.scene.layers.getLayerByName("Immediate");
       const entity = modelElement.entity;
       const renderComponents = entity.findComponents("render");
+
+      console.log(renderComponents);
       renderComponents.forEach((renderComp) => {
         renderComp.layers = [immediateLayer.id];
         renderComp.meshInstances.forEach((meshInstance) => {
@@ -210,7 +213,7 @@ class ViewerApp {
 
   async setupCustomShader(gsplatAsset) {
     const scene_splat_entity = document.querySelector(
-      "pc-entity[name='splat']",
+      "pc-entity[name='splat']"
     );
 
     scene_splat_entity.entity.destroy();
@@ -263,7 +266,7 @@ class ViewerApp {
           20,
           0,
           cameraData.position,
-          cameraData.target,
+          cameraData.target
         );
       }
       return;

@@ -20,7 +20,7 @@ ShapePicker.prototype.initialize = function () {
   this.picker = new pc.Picker(
     this.app,
     this.app.graphicsDevice.width,
-    this.app.graphicsDevice.height,
+    this.app.graphicsDevice.height
   );
 
   // Add event callbacks storage for pointer events
@@ -41,15 +41,19 @@ ShapePicker.prototype.initialize = function () {
 
   this.hitPosition = new pc.Vec3();
 
-  this.on("destroy", function () {
-    // Clean up our event handlers if the script is destroyed
-    this.app.mouse.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
-    this.app.mouse.off(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
+  this.on(
+    "destroy",
+    function () {
+      // Clean up our event handlers if the script is destroyed
+      this.app.mouse.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+      this.app.mouse.off(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
 
-    if (this.app.touch) {
-      this.app.touch.off(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
-    }
-  }, this);
+      if (this.app.touch) {
+        this.app.touch.off(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
+      }
+    },
+    this
+  );
 };
 
 ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
@@ -57,7 +61,7 @@ ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
     "doPickerSelection called with position:",
     screenPosition,
     "event:",
-    eventType,
+    eventType
   );
 
   if (!this.cameraEntity || !this.cameraEntity.camera) {
@@ -105,15 +109,16 @@ ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
       scaledX,
       scaledY,
       this.cameraEntity.camera.farClip,
-      ray.direction,
+      ray.direction
     );
     ray.origin.copy(this.cameraEntity.getPosition());
     ray.direction.sub(ray.origin).normalize();
 
     // Calculate the hit position using the mesh distance
-    this.hitPosition.copy(ray.direction).scale(meshInstance.distance).add(
-      ray.origin,
-    );
+    this.hitPosition
+      .copy(ray.direction)
+      .scale(meshInstance.distance)
+      .add(ray.origin);
 
     console.log("Hit position:", this.hitPosition);
 
@@ -153,7 +158,7 @@ ShapePicker.prototype.doPickerSelection = function (screenPosition, eventType) {
           size: size,
         },
       },
-      "*",
+      "*"
     );
 
     if (this.hitMarkerEntity) {
@@ -203,7 +208,7 @@ ShapePicker.prototype.onTouchStart = function (event) {
 ShapePicker.prototype.registerPointerEvent = function (
   entityName,
   eventType,
-  callback,
+  callback
 ) {
   if (!this.pointerCallbacks[entityName]) {
     this.pointerCallbacks[entityName] = {};
@@ -222,7 +227,7 @@ ShapePicker.prototype.executePointerCallback = function (
   entityName,
   eventType,
   position,
-  aabbInfo,
+  aabbInfo
 ) {
   if (
     this.pointerCallbacks[entityName] &&
@@ -249,7 +254,9 @@ ShapePicker.prototype.getEntityAABB = function (entity) {
   const processEntity = (ent) => {
     // Check if entity has a model component
     if (
-      ent.model && ent.model.meshInstances && ent.model.meshInstances.length > 0
+      ent.model &&
+      ent.model.meshInstances &&
+      ent.model.meshInstances.length > 0
     ) {
       // Get the model's AABB in world space
       const modelAabb = ent.model.aabb;
@@ -287,7 +294,7 @@ ShapePicker.prototype.getEntityAABB = function (entity) {
 ShapePicker.prototype.frameCameraOnEntity = function (
   entity,
   centerPoint,
-  size,
+  size
 ) {
   // Find the camera with the FrameScene script
 
@@ -298,5 +305,5 @@ ShapePicker.prototype.frameCameraOnEntity = function (
 
   const cameraEntity = this.app.root.findByName("camera");
   const frameSceneScript = cameraEntity.script.frameScene;
-  frameSceneScript.frameScene(centerPoint, 100, 0);
+  // frameSceneScript.frameScene(centerPoint, 100, 0);
 };
